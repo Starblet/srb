@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--日志配置的根节点-->
+<configuration>
+    <!--设置名字-->
+    <contextName>Srb</contextName>
+
+    <!-- property标签用来定义一系列的属性（规范） -->
+    <!-- 日志的输出目录 -->
+    <property name="log.path" value="E:/Starblet/项目/尚融宝/log/sms" />
+
+    <!--控制台日志格式：彩色日志-->
+    <!-- magenta:洋红 -->
+    <!-- boldMagenta:粗红-->
+    <!-- cyan:青色 -->
+    <!-- white:白色 -->
+    <!-- magenta:洋红 -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) %highlight([%-5level]) %green(%logger) %msg%n"/>
+
+    <!--文件日志格式-->
+    <property name="FILE_LOG_PATTERN"
+              value="%date{yyyy-MM-dd HH:mm:ss} [%-5level] %thread %file:%line %logger %msg%n" />
+
+    <!--编码-->
+    <property name="ENCODING"
+              value="UTF-8" />
+
+    <!-- appender是设置具体写日志的格式，通过调用上面设定的属性来设置格式 -->
+    <!-- 控制台日志 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder> <!-- 对日志进行格式化 -->
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern> <!-- 定义日志的具体输出格式 -->
+            <charset>${ENCODING}</charset> <!-- 编码方式 -->
+        </encoder>
+    </appender>
+
+    <!-- 文件日志 -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${log.path}/log.log</file>
+        <append>true</append> <!-- 文件后面追加内容 -->
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>${ENCODING}</charset>
+        </encoder>
+    </appender>
+
+    <!-- logger用来设定日志打印级别、指定<appender> -->
+    <!-- 日志记录器  -->
+<!--    <logger name="com.starblet" level="INFO">-->
+<!--        <appender-ref ref="CONSOLE" />-->
+<!--        <appender-ref ref="FILE" />-->
+<!--    </logger>-->
+
+
+    <!--
+        总结：
+        property: 设置具体的日志格式
+        appender：配置如何写日志，比如哪个日志格式，字符集是什么；appender必须都放在logger上面，才能找得到
+        logger:配置哪些包需要写日志以及日志的等级
+    -->
+
+    <!--滚动日志的设定-->
+    <!--如果日志只写在一个文件中，由于日志文件越来越大，在写日志之前会先读日志，导致占用的内存越来越多-->
+    <!--方式：可以按照时间来滚动；或者按照文件的大小-->
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <!--  要区别于其他的appender中的文件名字  -->
+        <file>${log.path}/log-rolling.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>${ENCODING}</charset>
+        </encoder>
+
+
+        <!-- 设置滚动日志记录的滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志归档路径以及格式 -->
+            <fileNamePattern>${log.path}/info/log-rolling-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!--归档日志文件保留的最大数量-->
+            <maxHistory>15</maxHistory>  <!--只保留15天-->
+
+            <!--设置触发滚动时机-->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>500MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+
+    </appender>
+
+
+    <!-- springProfile用来设置具体环境对应的日志打印  -->
+    <!-- 开发环境和测试环境 -->
+    <springProfile name="dev,test"> <!-- name应该与application.yml文件中的环境名对应 -->
+        <logger name="com.starblet" level="DEBUG">  <!--name 用来指定受此logger约束的某一个包或者具体的某一个类-->
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="ROLLING_FILE" />
+        </logger>
+    </springProfile>
+
+    <!-- 生产环境 -->
+    <springProfile name="prod">
+        <logger name="com.starblet" level="ERROR">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="FILE" />
+        </logger>
+    </springProfile>
+
+</configuration>
